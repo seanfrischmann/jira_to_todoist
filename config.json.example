@@ -1,0 +1,8 @@
+{
+    "USER":"{JIRA USER}",
+    "PASSWORD":"{JIRA PASSWORD}",
+    "JIRA":"https://{JIRA DOMAIN}/rest/api/2/search",
+    "ISSUELINK":"https://{JIRA DOMAIN}/browse/",
+    "JQL":"{JQL Query to retrieve issues}",
+    "TODOIST":"{TODOIST API TOKEN}"
+}
