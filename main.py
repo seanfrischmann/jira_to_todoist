@@ -19,6 +19,13 @@ def main():
             print "Config File is missing:", field
             exit()
 
+    activeTasks = makeRequest({"Authorization": "Bearer %s" % config['TODOIST']},
+            {}, {"url": "https://beta.todoist.com/API/v8/tasks"})
+
+    taskList = {}
+    for task in activeTasks:
+        taskList[task['content']] = task
+
     headers = {
         'Content-Type': 'application/json',
     }
@@ -27,10 +34,10 @@ def main():
         ('jql', config['JQL'] ),
     )
 
-    response = requests.get(config['JIRA'],
-            headers=headers, params=params, auth=(config['USER'], config['PASSWORD']))
+    options = {'url': config['JIRA'], 'auth': { 'user': config['USER'],
+        'password': config['PASSWORD']}}
 
-    data = response.json()
+    data = makeRequest(headers, params, options)
 
     if (data):
         todoapi = todoist.TodoistAPI(config['TODOIST'])
@@ -38,13 +45,23 @@ def main():
         for issue in data['issues']:
             title = '[**' + issue['key'] + '**](' + config['ISSUELINK'] + issue['key']
             title +=  ') ' + issue['fields']['summary']
-            print 'adding: ', title
 
-            item = todoapi.items.add(title, 0)
-            todoapi.commit()
+            if (title not in taskList):
+                print 'adding task: ', title
+                item = todoapi.items.add(title, 0)
+                todoapi.commit()
 
-            note = todoapi.notes.add(item['id'], issue['fields']['description'])
-            todoapi.commit()
+                note = todoapi.notes.add(item['id'], issue['fields']['description'])
+                todoapi.commit()
+
+def makeRequest(headers, params, options):
+    if ('auth' in options):
+        response = requests.get(options['url'], headers=headers, params=params,
+                auth=(options['auth']['user'], options['auth']['password']))
+    else:
+        response = requests.get(options['url'], headers=headers, params=params)
+
+    return response.json()
 
 main()
 
