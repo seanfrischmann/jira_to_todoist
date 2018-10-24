@@ -4,5 +4,6 @@
     "JIRA":"https://{JIRA DOMAIN}/rest/api/2/search",
     "ISSUELINK":"https://{JIRA DOMAIN}/browse/",
     "JQL":"{JQL Query to retrieve issues}",
+    "PROJECT_OPTIONS": "{Name of ToDoist Project(s) separated by ,}",
     "TODOIST":"{TODOIST API TOKEN}"
 }
