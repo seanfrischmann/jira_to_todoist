@@ -90,8 +90,9 @@ def main():
 
                 todoapi.commit()
 
-                note = todoapi.notes.add(item['id'], issue['fields']['description'])
-                todoapi.commit()
+                if ('description' in issue['fields'] and issue['fields']['description']):
+                    note = todoapi.notes.add(item['id'], issue['fields']['description'])
+                    todoapi.commit()
 
 def makeRequest(headers, params, options):
     if ('auth' in options):
