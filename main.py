@@ -21,13 +21,13 @@ def main():
             exit()
 
     activeTasks = makeRequest({"Authorization": "Bearer %s" % config['TODOIST']},
-            {}, {"url": "https://beta.todoist.com/API/v8/tasks"})
+            {}, {"url": "https://api.todoist.com/rest/v1/tasks"})
 
     projects = makeRequest({"Authorization": "Bearer %s" % config['TODOIST']},
-            {}, {"url": "https://beta.todoist.com/API/v8/projects"})
+            {}, {"url": "https://api.todoist.com/rest/v1/projects"})
 
     labels = makeRequest({"Authorization": "Bearer %s" % config['TODOIST']},
-            {}, {"url": "https://beta.todoist.com/API/v8/labels"})
+            {}, {"url": "https://api.todoist.com/rest/v1/labels"})
 
     taskList = {}
     for task in activeTasks:
