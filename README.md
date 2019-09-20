@@ -1,5 +1,9 @@
 # Jira Issues to ToDoist Tasks
 
+## Packages and Versions
+* Python Version: 2.7.10
+* todoist-python 7.0.18
+
 ## Config File
 * User - Jira Username
 * Password - Jira Password or API Token
