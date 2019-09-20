@@ -2,7 +2,7 @@
 
 ## Packages and Versions
 * Python Version: 2.7.10
-* todoist-python 7.0.18
+* todoist-python-8.0.0
 
 ## Config File
 * User - Jira Username

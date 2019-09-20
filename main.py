@@ -6,7 +6,7 @@ import requests
 import todoist
 import pprint
 
-pp = pprint.PrettyPrinter(indent=4)
+pp = pprint.PrettyPrinter(indent=4, depth=6)
 
 config = []
 with open(os.path.join(sys.path[0], 'config.json')) as configFile:
@@ -20,26 +20,35 @@ def main():
             print "Config File is missing:", field
             exit()
 
-    activeTasks = makeRequest({"Authorization": "Bearer %s" % config['TODOIST']},
-            {}, {"url": "https://api.todoist.com/rest/v1/tasks"})
+    todoapi = todoist.TodoistAPI(config['TODOIST'])
 
-    projects = makeRequest({"Authorization": "Bearer %s" % config['TODOIST']},
-            {}, {"url": "https://api.todoist.com/rest/v1/projects"})
-
-    labels = makeRequest({"Authorization": "Bearer %s" % config['TODOIST']},
-            {}, {"url": "https://api.todoist.com/rest/v1/labels"})
+    tasks = todoapi.state['items']
+    projects = todoapi.state['projects']
+    labels = todoapi.state['labels']
 
     taskList = {}
-    for task in activeTasks:
-        taskList[task['content']] = task
+    for task in tasks:
+        task = task.__dict__
+        task = task['data']
+
+        if (activeCheck(task)):
+            taskList[task['content']] = task
 
     projectList = {}
     for project in projects:
-        projectList[project['name']] = project
+        project = project.__dict__
+        project = project['data']
+
+        if (activeCheck(project)):
+            projectList[project['name']] = project
 
     labelList = {}
     for label in labels:
-        labelList[label['name']] = label
+        label = label.__dict__
+        label = label['data']
+
+        if (activeCheck(label)):
+            labelList[label['name']] = label
 
     headers = {
         'Content-Type': 'application/json',
@@ -55,7 +64,6 @@ def main():
     data = makeRequest(headers, params, options)
 
     if (data):
-        todoapi = todoist.TodoistAPI(config['TODOIST'])
 
         if ('Jira-Issue' not in labelList):
             label = todoapi.labels.add('Jira-Issue')
@@ -68,6 +76,22 @@ def main():
         for issue in data['issues']:
             title = '[**' + issue['key'] + '**](' + config['ISSUELINK'] + issue['key']
             title +=  ') ' + issue['fields']['summary']
+
+            if (title in taskList):
+                deleteTask = raw_input("Task (" + str(data['total']) +
+                        ") already exists, would you like to delete it? (yes|no)\n")
+
+                if (deleteTask == 'yes'):
+                    print "Deleting: " + title + "\n"
+                    item = todoapi.items.get_by_id(taskList[title]['id'])
+                    item.close()
+                    todoapi.commit()
+
+                    item.delete()
+                    todoapi.commit()
+                    del taskList[title]
+                else:
+                    print "Skipping: " + title + "\n"
 
             if (title not in taskList):
                 print 'adding task: ', title
@@ -102,6 +126,20 @@ def makeRequest(headers, params, options):
         response = requests.get(options['url'], headers=headers, params=params)
 
     return response.json()
+
+def activeCheck(item):
+    active = True
+
+    if ('is_archived' in item and item['is_archived'] == 1):
+        active = False
+
+    if ('is_deleted' in item and item['is_deleted'] == 1):
+        active = False
+
+    if ('in_history' in item and item['in_history'] == 1):
+        active = False
+
+    return active
 
 main()
 
